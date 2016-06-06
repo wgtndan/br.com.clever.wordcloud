@@ -182,37 +182,38 @@ define(["jquery", "js/qlik", "./d3.min", "./d3.layout.cloud", "./br.com.clever.w
             cloud.go(words, layout, _this);
             // keep mouse cursor arrow instead of text select (auto)
             $("#" + id).css('cursor', 'default');
-        }
-    };
-});
 
-/*
+            /*
 JavaScript random numbers with custom seed for fixed word cloud layout
 
 Author: Michal Budzynski:
 Source: http://michalbe.blogspot.de/2011/02/javascript-random-numbers-with-custom_23.html
 */
-function customRandom(nseed) {
-    var seed,
-        constant = Math.pow(2, 13) + 1,
-        prime = 1987,
-        //any prime number, needed for calculations, 1987 is my favorite:)  
-        maximum = 1000;
-    //maximum number needed for calculation the float precision of the numbers (10^n where n is number of digits after dot)  
-    if (nseed) {
-        seed = nseed;
-    }
-    if (seed == null) {
-        //before you will correct me in this comparison, read Andrea Giammarchi's text about coercion http://goo.gl/N4jCB  
-        seed = (new Date()).getTime();
-        //if there is no seed, use timestamp     
-    }
-    return {
-        next: function (min, max) {
-            seed *= constant;
-            seed += prime;
-            return min && max ? min + seed % maximum / maximum * (max - min) : seed % maximum / maximum;
-            // if 'min' and 'max' are not provided, return random number between 0 & 1  
+            function customRandom(nseed) {
+                var seed,
+                    constant = Math.pow(2, 13) + 1,
+                    prime = 1987,
+                    //any prime number, needed for calculations, 1987 is my favorite:)  
+                    maximum = 1000;
+                //maximum number needed for calculation the float precision of the numbers (10^n where n is number of digits after dot)  
+                if (nseed) {
+                    seed = nseed;
+                }
+                if (seed == null) {
+                    //before you will correct me in this comparison, read Andrea Giammarchi's text about coercion http://goo.gl/N4jCB  
+                    seed = (new Date()).getTime();
+                    //if there is no seed, use timestamp     
+                }
+                return {
+                    next: function () {
+                        while (seed > constant) seed = seed / prime;
+                        seed *= constant;
+                        seed += prime;
+                        var ret = seed % maximum / maximum;
+                        return ret;
+                    }
+                }
+            }
         }
-    }
-}
+    };
+});

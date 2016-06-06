@@ -74,10 +74,12 @@ define(["jquery", "./d3.min", "./d3.layout.cloud"], function ($, d3) {
                 .words(words)
                 .padding(layout.WordPadding)
                 .timeInterval(10)
-                //                .rotate(function() { return scaleRotate(Math.round(Math.random() * (+layout.Orientations - 1))); })
-                .rotate(function (d, i) {
-                    return scaleRotate(Math.round(i / words.length * (+layout.Orientations - 1)));
+                .rotate(function () {
+                    return scaleRotate(Math.round(rand.next() * (+layout.Orientations - 1)));
                 })
+                //.rotate(function (d, i) {
+                //    return scaleRotate(Math.round(i / words.length * (+layout.Orientations - 1)));
+                //})
                 .fontSize(function (d) {
                     return scale(+d.value);
                 })
