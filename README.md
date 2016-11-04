@@ -31,4 +31,4 @@ If(Count({1} [Word]) > 2, Green(), LightGray())
 ```
 
 
-![Qlik Sense Word Cloud Coloring](WordColoring.png)
+![Qlik Sense Word Cloud Coloring](WordColoring.PNG)
