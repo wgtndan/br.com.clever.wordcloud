@@ -33,7 +33,7 @@ define(["jquery", "./d3.min", "./d3.layout.cloud"], function ($, d3) {
                 .data(words)
                 .enter().append("text")
                 .style("fill", function (d, i) {
-                    return fill(i);
+                    return d.color?d.color:fill(i);
                 })
                 .attr("text-anchor", "middle")
                 .attr("transform", function (d) {
@@ -67,6 +67,9 @@ define(["jquery", "./d3.min", "./d3.layout.cloud"], function ($, d3) {
                 .replace(/"oWidth"/g, this.Width)
                 .replace(/"oHeight"/g, this.Height)
                 .replace(/layoutScaleColor/g, layout.ScaleColor);
+            console.log(words);
+            console.log(drawFunction);
+            
             var rand = this.CustomRandom(23);
             d3.layout.cloud()
                 .size([this.Width, this.Height])

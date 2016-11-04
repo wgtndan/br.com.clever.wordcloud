@@ -22,8 +22,8 @@ define(["jquery", "js/qlik", "./d3.min", "./d3.layout.cloud", "./br.com.clever.w
                 qDimensions: [],
                 qMeasures: [],
                 qInitialDataFetch: [{
-                    qWidth: 2,
-                    qHeight: 100
+                    qWidth: 3,
+                    qHeight: 500
                 }]
             }
         },
@@ -39,8 +39,8 @@ define(["jquery", "js/qlik", "./d3.min", "./d3.layout.cloud", "./br.com.clever.w
                 },
                 measures: {
                     uses: "measures",
-                    min: 1,
-                    max: 1
+                    min: 1, // 1. Word Count
+                    max: 2  // 2. Word Color
                 },
                 sorting: {
                     uses: "sorting"
@@ -156,15 +156,29 @@ define(["jquery", "js/qlik", "./d3.min", "./d3.layout.cloud", "./br.com.clever.w
                 .height($element.height())
                 .appendTo($($element).empty());
 
-            var words = layout.qHyperCube.qDataPages[0].qMatrix.map(function (row) {
-                return {
-                    text: row[0].qText,
-                    value: row[1].qNum,
-                    label: row[1].qText,
-                    element: row[0].qElemNumber
-                };
-            });
+            var words = {};
 
+            if (layout.qHyperCube.qMeasureInfo.length > 1) {
+                words = layout.qHyperCube.qDataPages[0].qMatrix.map(function (row) {
+                    return {
+                        text: row[0].qText,
+                        value: row[1].qNum,
+                        label: row[1].qText,
+                        element: row[0].qElemNumber,
+                        color: row[2].qText
+                    };
+                });
+            } else {
+                words = layout.qHyperCube.qDataPages[0].qMatrix.map(function (row) {
+                    return {
+                        text: row[0].qText,
+                        value: row[1].qNum,
+                        label: row[1].qText,
+                        element: row[0].qElemNumber
+                    };
+                });
+            }
+            console.log(words);
             var app = qlik.currApp(this);
             app.getList("CurrentSelections", function (reply) {
                 var wordSelections = reply.qSelectionObject.qSelections.filter(function (e) {
@@ -184,11 +198,11 @@ define(["jquery", "js/qlik", "./d3.min", "./d3.layout.cloud", "./br.com.clever.w
             $("#" + id).css('cursor', 'default');
 
             /*
-JavaScript random numbers with custom seed for fixed word cloud layout
+            JavaScript random numbers with custom seed for fixed word cloud layout
 
-Author: Michal Budzynski:
-Source: http://michalbe.blogspot.de/2011/02/javascript-random-numbers-with-custom_23.html
-*/
+            Author: Michal Budzynski:
+            Source: http://michalbe.blogspot.de/2011/02/javascript-random-numbers-with-custom_23.html
+            */
             function customRandom(nseed) {
                 var seed,
                     constant = Math.pow(2, 13) + 1,
