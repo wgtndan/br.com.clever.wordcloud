@@ -48,13 +48,24 @@
 
                 return cloud;
 
-                function step() {
+                function step(mode) {
                     var start = Date.now();
                     while (Date.now() - start < timeInterval && ++i < n && timer) {
                         var d = data[i];
                         d.x = (size[0] * (random() + .5)) >> 1;
                         d.y = (size[1] * (random() + .5)) >> 1;
                         cloudSprite(d, data, i);
+                        //#RB fix, do not exclude too large words:
+                        if (!mode && (d.width > size[0] || d.height > size[1])) {
+                            if (d.width > size[0]) size[0] = d.width * 1.2;
+                            if (d.height > size[1]) size[1] = d.height * 1.2;
+                            for (var ii = 0; ii <= i; ii++) {
+                                delete data[ii].sprite;
+                            }
+                            i = -1;
+                            step(1);
+                            return;
+                        }
                         if (d.hasText && place(board, d, bounds)) {
                             tags.push(d);
                             event.word(d);
@@ -88,12 +99,12 @@
 
             function place(board, tag, bounds) {
                 var perimeter = [{
-                        x: 0,
-                        y: 0
-                    }, {
-                        x: size[0],
-                        y: size[1]
-                    }],
+                    x: 0,
+                    y: 0
+                }, {
+                    x: size[0],
+                    y: size[1]
+                }],
                     startX = tag.x,
                     startY = tag.y,
                     maxDelta = Math.sqrt(size[0] * size[0] + size[1] * size[1]),
@@ -353,18 +364,18 @@
                 var sign = t < 0 ? -1 : 1;
                 // See triangular numbers: T_n = n * (n + 1) / 2.
                 switch ((Math.sqrt(1 + 4 * sign * t) - sign) & 3) {
-                case 0:
-                    x += dx;
-                    break;
-                case 1:
-                    y += dy;
-                    break;
-                case 2:
-                    x -= dx;
-                    break;
-                default:
-                    y -= dy;
-                    break;
+                    case 0:
+                        x += dx;
+                        break;
+                    case 1:
+                        y += dy;
+                        break;
+                    case 2:
+                        x -= dx;
+                        break;
+                    default:
+                        y -= dy;
+                        break;
                 }
                 return [x, y];
             };
