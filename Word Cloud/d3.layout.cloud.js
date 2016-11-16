@@ -57,8 +57,8 @@
                         cloudSprite(d, data, i);
                         //#RB fix, do not exclude too large words:
                         if (!mode && (d.width > size[0] || d.height > size[1])) {
-                            if (d.width > size[0]) size[0] = d.width * 1.2;
-                            if (d.height > size[1]) size[1] = d.height * 1.2;
+                            if (d.width > size[0]) size[0] = d.width;
+                            if (d.height > size[1]) size[1] = d.height;
                             for (var ii = 0; ii <= i; ii++) {
                                 delete data[ii].sprite;
                             }
