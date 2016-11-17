@@ -161,7 +161,8 @@ define(["jquery", "js/qlik", "./d3.min", "./d3.layout.cloud", "./br.com.clever.w
             if (layout.qHyperCube.qMeasureInfo.length > 1) {
                 words = layout.qHyperCube.qDataPages[0].qMatrix.map(function (row) {
                     return {
-                        text: row[0].qText,
+                        text: (row[0].qText.length > 20 ? row[0].qText.substring(0, 18) + '..' : row[0].qText),
+                        title: row[0].qText,
                         value: row[1].qNum,
                         label: row[1].qText,
                         element: row[0].qElemNumber,
@@ -171,7 +172,8 @@ define(["jquery", "js/qlik", "./d3.min", "./d3.layout.cloud", "./br.com.clever.w
             } else {
                 words = layout.qHyperCube.qDataPages[0].qMatrix.map(function (row) {
                     return {
-                        text: row[0].qText,
+                        text: (row[0].qText.length > 20 ? row[0].qText.substring(0, 18) + '..' : row[0].qText),
+                        title: row[0].qText,
                         value: row[1].qNum,
                         label: row[1].qText,
                         element: row[0].qElemNumber
@@ -194,8 +196,10 @@ define(["jquery", "js/qlik", "./d3.min", "./d3.layout.cloud", "./br.com.clever.w
 
             var cloud = d3.wordcloud.id(id).width($element.width()).height($element.height()).customRandom(customRandom);
             cloud.go(words, layout, _this);
+            cloud = null;
             // keep mouse cursor arrow instead of text select (auto)
             $("#" + id).css('cursor', 'default');
+            
 
             /*
             JavaScript random numbers with custom seed for fixed word cloud layout

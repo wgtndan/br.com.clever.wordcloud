@@ -20,7 +20,6 @@
                 timeInterval = Infinity,
                 event = d3.dispatch("word", "end"),
                 timer = null,
-                random = Math.random,
                 cloud = {};
 
             cloud.start = function () {
@@ -43,29 +42,48 @@
                     });
 
                 if (timer) clearInterval(timer);
-                timer = setInterval(step, 0);
-                step();
+                timer = setInterval(step(0), 50);
 
                 return cloud;
 
                 function step(mode) {
-                    var start = Date.now();
-                    while (Date.now() - start < timeInterval && ++i < n && timer) {
-                        var d = data[i];
-                        d.x = (size[0] * (random() + .5)) >> 1;
-                        d.y = (size[1] * (random() + .5)) >> 1;
-                        cloudSprite(d, data, i);
-                        //#RB fix, do not exclude too large words:
-                        if (!mode && (d.width > size[0] || d.height > size[1])) {
-                            if (d.width > size[0]) size[0] = d.width;
-                            if (d.height > size[1]) size[1] = d.height;
-                            for (var ii = 0; ii <= i; ii++) {
+                    var ii = 0;
+                    if (mode === 0) {
+                        var maxSize = [0, 0];
+                        maxSize[0] = size[0];
+                        maxSize[1] = size[1];
+                        for (ii = 0; ii < data.length; ii++) {
+                            var d = data[ii];
+                            if (d.text.length > 15 && (d.rotate === -90 || d.rotate === 90)) {
+                                d.rotate = rotate();
+                            }
+                            d.x = (size[0] * (random() + .5)) >> 1;
+                            d.y = (size[1] * (random() + .5)) >> 1;
+                            cloudSprite(d, data, ii);
+                            maxSize[0] = Math.max(maxSize[0], d.width * 1.3);
+                            maxSize[1] = Math.max(maxSize[1], d.height * 1.3);
+                        }
+                        if ((maxSize[0] > size[0] || maxSize[1] > size[1])) {
+                            if (maxSize[0] > size[0]) size[0] = maxSize[0];
+                            if (maxSize[1] > size[1]) size[1] = maxSize[1];
+                            for (var ii = 0; ii < data.length; ii++) {
                                 delete data[ii].sprite;
                             }
-                            i = -1;
+                            board = zeroArray((size[0] >> 5) * size[1]);
+                            bounds = null;
                             step(1);
                             return;
                         }
+                    } else if (mode === 1) {
+                        for (ii = 0; ii < data.length; ii++) {
+                            var d = data[ii];
+                            d.x = (size[0] * (random() + .5)) >> 1;
+                            d.y = (size[1] * (random() + .5)) >> 1;
+                            cloudSprite(d, data, ii);
+                        }
+                    }
+                    while (++i < n) {
+                        var d = data[i];
                         if (d.hasText && place(board, d, bounds)) {
                             tags.push(d);
                             event.word(d);
@@ -98,14 +116,7 @@
             };
 
             function place(board, tag, bounds) {
-                var perimeter = [{
-                    x: 0,
-                    y: 0
-                }, {
-                    x: size[0],
-                    y: size[1]
-                }],
-                    startX = tag.x,
+                var startX = tag.x,
                     startY = tag.y,
                     maxDelta = Math.sqrt(size[0] * size[0] + size[1] * size[1]),
                     s = spiral(size),
@@ -150,7 +161,9 @@
                         }
                     }
                 }
-                return false;
+                console.log("no place", tag);
+                delete tag.sprite;
+                return true;
             }
 
             cloud.timeInterval = function (_) {
@@ -221,7 +234,7 @@
         }
 
         function cloudRotate() {
-            return (~~(Math.random() * 6) - 3) * 30;
+            return (~~(random() * 6) - 3) * 30;
         }
 
         function cloudPadding() {

@@ -49,7 +49,7 @@ define(["jquery", "./d3.min", "./d3.layout.cloud"], function ($, d3) {
                     self.backendApi.selectValues(0, [d.element], false);
                 })
                 .append("svg:title").text(function (d) {
-                    return d.text + ': ' + d.label;
+                    return d.title + ': ' + d.label;
                 });
         },
         go: function (words, layout, self) {
@@ -67,8 +67,6 @@ define(["jquery", "./d3.min", "./d3.layout.cloud"], function ($, d3) {
                 .replace(/"oWidth"/g, this.Width)
                 .replace(/"oHeight"/g, this.Height)
                 .replace(/layoutScaleColor/g, layout.ScaleColor);
-            console.log(words);
-            console.log(drawFunction);
             
             var rand = this.CustomRandom(23);
             d3.layout.cloud()
