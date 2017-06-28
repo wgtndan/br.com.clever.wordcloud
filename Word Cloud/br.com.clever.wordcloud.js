@@ -22,8 +22,8 @@ define(["jquery", "js/qlik", "./d3.min", "./d3.layout.cloud", "./br.com.clever.w
                 qDimensions: [],
                 qMeasures: [],
                 qInitialDataFetch: [{
-                    qWidth: 3,
-                    qHeight: 500
+                    qWidth: 2,
+                    qHeight: 100
                 }]
             }
         },
@@ -39,8 +39,8 @@ define(["jquery", "js/qlik", "./d3.min", "./d3.layout.cloud", "./br.com.clever.w
                 },
                 measures: {
                     uses: "measures",
-                    min: 1, // 1. Word Count
-                    max: 2  // 2. Word Color
+                    min: 1,
+                    max: 1
                 },
                 sorting: {
                     uses: "sorting"
@@ -111,11 +111,48 @@ define(["jquery", "js/qlik", "./d3.min", "./d3.layout.cloud", "./br.com.clever.w
                                     options: [{
                                         value: "log",
                                         label: "Log"
-                            }, {
+                                        }, {
                                         value: "linear",
                                         label: "Linear"
-                            }],
+                                    }],
                                     defaultValue: "linear"
+                                },
+                                MultiSelect: {
+                                    type: "boolean",
+                                    component: "switch",
+                                    label: "Enable Multiple Selections on Wordcloud",
+                                    ref: "multiselect",
+                                    options: [{
+                                        value: true,
+                                        label: "On"
+                                    }, {
+                                        value: false,
+                                        label: "Off"
+                                    }],
+                                    defaultValue: false
+                                }
+                            }
+                        },
+                        wordColorHeader: {
+                            type: "items",
+                            label: "Word Cloud Colors",
+                            items: {
+                                ColorMethod: {
+                                    type: "string",
+                                    component: "dropdown",
+                                    label: "Color Method",
+                                    ref: "ColorMethod",
+                                    options: [{
+                                        value: "ColorScale",
+                                        label: "D3 Color Scale"
+                                    }, {
+                                        value: "ColorCustomRange",
+                                        label: "Custom Color Range"
+                                    }, {
+                                        value: "ColorCustomSet",
+                                        label: "4 Specific Colors"
+                                    }],
+                                defaultValue: "ColorScale"
                                 },
                                 ScaleColor: {
                                     type: "string",
@@ -125,18 +162,95 @@ define(["jquery", "js/qlik", "./d3.min", "./d3.layout.cloud", "./br.com.clever.w
                                     options: [{
                                         value: "category10",
                                         label: "category10"
-                            }, {
+                                        }, {
                                         value: "category20",
                                         label: "category20"
-                            }, {
+                                        }, {
                                         value: "category20b",
                                         label: "category20b"
-                            }, {
+                                        }, {
                                         value: "category20c",
                                         label: "category20c"
-                            }],
-                                    defaultValue: "category20"
-                                }
+                                        }],
+                                    defaultValue: "category20",
+                                    show : function(data) {
+                                        if (data.ColorMethod == "ColorScale") {
+                                            return true;
+                                        }
+                                    }
+                                },
+                                customRangeFrom: {
+                                    type: "string",
+                                    expression: "none",
+                                    label: "From",
+                                    defaultValue: "#8c8c8c",
+                                    ref: "colorFrom",
+                                    show : function(data) {
+                                        if (data.ColorMethod == "ColorCustomRange") {
+                                            return true;
+                                        }
+                                    }
+                                },
+                                customRangeTo: {
+                                    type: "string",
+                                    expression: "none",
+                                    label: "To",
+                                    defaultValue: "#044d95",
+                                    ref: "colorTo",
+                                    show : function(data) {
+                                        if (data.ColorMethod == "ColorCustomRange") {
+                                            return true;
+                                        }
+                                    }
+                                },
+                                customColor1: {
+                                    type: "string",
+                                    expression: "none",
+                                    label: "Color 1 (High Value)",
+                                    defaultValue: "#ccff99",
+                                    ref: "customColor1",
+                                    show : function(data) {
+                                        if (data.ColorMethod == "ColorCustomSet") {
+                                            return true;
+                                        }
+                                    }
+                                },
+                                customColor2: {
+                                    type: "string",
+                                    expression: "none",
+                                    label: "Color 2",
+                                    defaultValue: "#80bfff",
+                                    ref: "customColor2",
+                                    show : function(data) {
+                                        if (data.ColorMethod == "ColorCustomSet") {
+                                            return true;
+                                        }
+                                    }
+                                },
+                                customColor3: {
+                                    type: "string",
+                                    expression: "none",
+                                    label: "Color 3",
+                                    defaultValue: "#ffb84d",
+                                    ref: "customColor3",
+                                    show : function(data) {
+                                        if (data.ColorMethod == "ColorCustomSet") {
+                                            return true;
+                                        }
+                                    }
+                                },
+                                customColor4: {
+                                    type: "string",
+                                    expression: "none",
+                                    label: "Color 4 (Low Value)",
+                                    defaultValue: "#eb99ff",
+                                    ref: "customColor4",
+                                    show : function(data) {
+                                        if (data.ColorMethod == "ColorCustomSet") {
+                                            return true;
+                                        }
+                                    }
+                                },
                             }
                         }
                     }
@@ -157,56 +271,55 @@ define(["jquery", "js/qlik", "./d3.min", "./d3.layout.cloud", "./br.com.clever.w
                 .appendTo($($element).empty());
 
             var words = {};
-
-            if (layout.qHyperCube.qMeasureInfo.length > 1) {
+            // if(layout.ColorMethod == "expression"){
+            //     words = layout.qHyperCube.qDataPages[0].qMatrix.map(function (row) {
+            //         return {
+            //             text: row[0].qText,
+            //             value: row[1].qNum,
+            //             label: row[1].qText,
+            //             element: row[0].qElemNumber,
+            //             color:
+            //         };
+            //     });
+            // }else{
                 words = layout.qHyperCube.qDataPages[0].qMatrix.map(function (row) {
                     return {
-                        text: (row[0].qText.length > 20 ? row[0].qText.substring(0, 18) + '..' : row[0].qText),
-                        title: row[0].qText,
-                        value: row[1].qNum,
-                        label: row[1].qText,
-                        element: row[0].qElemNumber,
-                        color: row[2].qText
-                    };
-                });
-            } else {
-                words = layout.qHyperCube.qDataPages[0].qMatrix.map(function (row) {
-                    return {
-                        text: (row[0].qText.length > 20 ? row[0].qText.substring(0, 18) + '..' : row[0].qText),
-                        title: row[0].qText,
+                        text: row[0].qText,
                         value: row[1].qNum,
                         label: row[1].qText,
                         element: row[0].qElemNumber
                     };
                 });
-            }
-            console.log(words);
+            // }
+
             var app = qlik.currApp(this);
             app.getList("CurrentSelections", function (reply) {
+                console.log('reply: ' + reply);
                 var wordSelections = reply.qSelectionObject.qSelections.filter(function (e) {
                     return e.qField == layout.qHyperCube.qDimensionInfo[0].qFallbackTitle;
                 });
+                console.log('wordSelections: ' + wordSelections);
                 var wordsSelected = [];
                 if (wordSelections.length > 0) {
                     wordsSelected = wordSelections[0].qSelectedFieldSelectionInfo.map(function (e) {
+                console.log('e.qName: ' +e.qName);
                         return e.qName;
                     });
                 }
+                console.log('wordsSelected: ' +wordsSelected);
             });
 
             var cloud = d3.wordcloud.id(id).width($element.width()).height($element.height()).customRandom(customRandom);
             cloud.go(words, layout, _this);
-            cloud = null;
             // keep mouse cursor arrow instead of text select (auto)
             $("#" + id).css('cursor', 'default');
-            
 
             /*
-            JavaScript random numbers with custom seed for fixed word cloud layout
+JavaScript random numbers with custom seed for fixed word cloud layout
 
-            Author: Michal Budzynski:
-            Source: http://michalbe.blogspot.de/2011/02/javascript-random-numbers-with-custom_23.html
-            */
+Author: Michal Budzynski:
+Source: http://michalbe.blogspot.de/2011/02/javascript-random-numbers-with-custom_23.html
+*/
             function customRandom(nseed) {
                 var seed,
                     constant = Math.pow(2, 13) + 1,

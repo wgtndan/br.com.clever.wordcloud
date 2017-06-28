@@ -22,8 +22,36 @@ define(["jquery", "./d3.min", "./d3.layout.cloud"], function ($, d3) {
         fill: null,
         CustomRandom: Math.random,
         drawStub: function (words) {
-            var fill = d3.scale["layout.ScaleColor"](),
-                svg = d3.select("#oId").append("svg")
+            switch(layout.ColorMethod){
+                case "ColorScale":
+                    var fill = d3.scale["layout.ScaleColor"]();
+                    break;
+                case "ColorCustomRange":
+                    var fill =d3.scale.linear()
+                    .domain([0, words.length])
+                    .interpolate(d3.interpolateHcl)
+                    .range([layout.colorTo, layout.colorFrom]);
+                    break;
+                case "ColorCustomSet":
+                    var fill =d3.scale.ordinal()
+                    .domain([0, words.length])
+                    .range([layout.customColor1, layout.customColor2, layout.customColor3, layout.customColor4]);
+                    break;
+            }
+
+            // if (layout.customRange) {
+            //     // var fill =d3.scale.linear()
+            //     //     .domain([0, words.length])
+            //     //     .interpolate(d3.interpolateHcl)
+            //     //     .range([layout.colorTo, layout.colorFrom]);
+            //     var fill =d3.scale.ordinal()
+            //         .domain([0, words.length])
+            //         // .interpolate(d3.interpolateHcl)
+            //         .range([layout.colorTo, layout.colorFrom]);
+            // } else {
+            // }	
+            // var fill = d3.scale["layout.ScaleColor"](),
+            var svg = d3.select("#oId").append("svg")
                 .attr("width", "oWidth")
                 .attr("height", "oHeight")
                 .attr("class", "wordcloud")
@@ -46,10 +74,10 @@ define(["jquery", "./d3.min", "./d3.layout.cloud"], function ($, d3) {
                     return d.text;
                 })
                 .on("click", function (d) {
-                    self.backendApi.selectValues(0, [d.element], false);
+                    self.backendApi.selectValues(0, [d.element], layout.multiselect);
                 })
                 .append("svg:title").text(function (d) {
-                    return d.title + ': ' + d.label;
+                    return d.text + ': ' + d.label;
                 });
         },
         go: function (words, layout, self) {
@@ -67,7 +95,6 @@ define(["jquery", "./d3.min", "./d3.layout.cloud"], function ($, d3) {
                 .replace(/"oWidth"/g, this.Width)
                 .replace(/"oHeight"/g, this.Height)
                 .replace(/layoutScaleColor/g, layout.ScaleColor);
-            
             var rand = this.CustomRandom(23);
             d3.layout.cloud()
                 .size([this.Width, this.Height])

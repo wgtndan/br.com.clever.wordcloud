@@ -20,6 +20,7 @@
                 timeInterval = Infinity,
                 event = d3.dispatch("word", "end"),
                 timer = null,
+                random = Math.random,
                 cloud = {};
 
             cloud.start = function () {
@@ -42,48 +43,18 @@
                     });
 
                 if (timer) clearInterval(timer);
-                timer = setInterval(step(0), 50);
+                timer = setInterval(step, 0);
+                step();
 
                 return cloud;
 
-                function step(mode) {
-                    var ii = 0;
-                    if (mode === 0) {
-                        var maxSize = [0, 0];
-                        maxSize[0] = size[0];
-                        maxSize[1] = size[1];
-                        for (ii = 0; ii < data.length; ii++) {
-                            var d = data[ii];
-                            if (d.text.length > 15 && (d.rotate === -90 || d.rotate === 90)) {
-                                d.rotate = rotate();
-                            }
-                            d.x = (size[0] * (random() + .5)) >> 1;
-                            d.y = (size[1] * (random() + .5)) >> 1;
-                            cloudSprite(d, data, ii);
-                            maxSize[0] = Math.max(maxSize[0], d.width * 1.3);
-                            maxSize[1] = Math.max(maxSize[1], d.height * 1.3);
-                        }
-                        if ((maxSize[0] > size[0] || maxSize[1] > size[1])) {
-                            if (maxSize[0] > size[0]) size[0] = maxSize[0];
-                            if (maxSize[1] > size[1]) size[1] = maxSize[1];
-                            for (var ii = 0; ii < data.length; ii++) {
-                                delete data[ii].sprite;
-                            }
-                            board = zeroArray((size[0] >> 5) * size[1]);
-                            bounds = null;
-                            step(1);
-                            return;
-                        }
-                    } else if (mode === 1) {
-                        for (ii = 0; ii < data.length; ii++) {
-                            var d = data[ii];
-                            d.x = (size[0] * (random() + .5)) >> 1;
-                            d.y = (size[1] * (random() + .5)) >> 1;
-                            cloudSprite(d, data, ii);
-                        }
-                    }
-                    while (++i < n) {
+                function step() {
+                    var start = Date.now();
+                    while (Date.now() - start < timeInterval && ++i < n && timer) {
                         var d = data[i];
+                        d.x = (size[0] * (random() + .5)) >> 1;
+                        d.y = (size[1] * (random() + .5)) >> 1;
+                        cloudSprite(d, data, i);
                         if (d.hasText && place(board, d, bounds)) {
                             tags.push(d);
                             event.word(d);
@@ -116,7 +87,14 @@
             };
 
             function place(board, tag, bounds) {
-                var startX = tag.x,
+                var perimeter = [{
+                        x: 0,
+                        y: 0
+                    }, {
+                        x: size[0],
+                        y: size[1]
+                    }],
+                    startX = tag.x,
                     startY = tag.y,
                     maxDelta = Math.sqrt(size[0] * size[0] + size[1] * size[1]),
                     s = spiral(size),
@@ -161,9 +139,7 @@
                         }
                     }
                 }
-                console.log("no place", tag);
-                delete tag.sprite;
-                return true;
+                return false;
             }
 
             cloud.timeInterval = function (_) {
@@ -234,7 +210,7 @@
         }
 
         function cloudRotate() {
-            return (~~(random() * 6) - 3) * 30;
+            return (~~(Math.random() * 6) - 3) * 30;
         }
 
         function cloudPadding() {
@@ -377,18 +353,18 @@
                 var sign = t < 0 ? -1 : 1;
                 // See triangular numbers: T_n = n * (n + 1) / 2.
                 switch ((Math.sqrt(1 + 4 * sign * t) - sign) & 3) {
-                    case 0:
-                        x += dx;
-                        break;
-                    case 1:
-                        y += dy;
-                        break;
-                    case 2:
-                        x -= dx;
-                        break;
-                    default:
-                        y -= dy;
-                        break;
+                case 0:
+                    x += dx;
+                    break;
+                case 1:
+                    y += dy;
+                    break;
+                case 2:
+                    x -= dx;
+                    break;
+                default:
+                    y -= dy;
+                    break;
                 }
                 return [x, y];
             };

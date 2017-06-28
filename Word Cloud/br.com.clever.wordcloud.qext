@@ -3,7 +3,7 @@
 	"description": "Word Cloud",
 	"icon": "treemap",
 	"type": "visualization",
-	"version": 1,
+	"version": 2,
 	"preview": "wordcloud.png",
-	"author": "Clever Anjos (clever@clever.com.br), Ralf Becher (irregular.bi)"
+	"author": "Clever Anjos (clever@clever.com.br), Ralf Becher (irregular.bi), Dan McInteer (@WgtnDan)"
 }
