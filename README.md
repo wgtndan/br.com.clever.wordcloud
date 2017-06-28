@@ -58,6 +58,12 @@ The scaling method of the visualisation
 
 A switch to enable multiple selections for filtering purposes when On. If Off then selections on the Field are replaced, rather than additional to existing selections for that Field.
 
+In order to utilise multiple selections you will likely need to utilise set Analysis to perform an inner filter of the [Identifier] that is recorded in a Field alongside your [Word] field. For example
+```
+Count({1<[Identifier] = {"=rank(count([Word]))"}>} [Word])
+```
+This says Count EVERY word where the Identifier value has a Count of the SELECTED word.
+
 **Word Cloud Colors**
 
 *Color Method*
